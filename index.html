@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BilimCheck - Мугалимдин панели</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.compat.js"></script>
+    
+    <style>
+        body { background-color: #0b0f19; color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="flex justify-between items-center bg-[#111827] p-4 rounded-xl border border-gray-800 mb-8 shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="text-2xl font-black tracking-wider text-blue-500">BILIM<span class="text-emerald-400">CHECK</span></div>
+            <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">панель</span>
+        </div>
+        <div class="flex space-x-3">
+            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition cursor-pointer">
+                + EXCEL ЖҮКТӨӨ
+            </button>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition cursor-pointer">
+                + ЖАҢЫ ТЕСТ ТҮЗҮҮ
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-md">
+            <h2 class="text-sm font-bold text-blue-400 mb-4 tracking-wide uppercase">📁 Менин тесттерим</h2>
+            
+            <div class="bg-[#1f2937] p-4 rounded-lg mb-3 border border-gray-700 flex justify-between items-center">
+                <div>
+                    <p class="font-semibold text-sm">7-класс "Жылдык"</p>
+                    <span class="text-xs text-red-400 font-medium">Жабык</span>
+                </div>
+                <div class="flex space-x-1">
+                    <button class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Шилтеме</button>
+                    <button class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Түзөтүү</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-emerald-400 tracking-wide uppercase">📊 Окуучулардын жыйынтыктары (Реалдуу убакыт)</h2>
+                <button class="text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-1 rounded hover:bg-red-900/30 transition">Тазалоо</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-gray-500 text-xs border-b border-gray-800 uppercase">
+                            <th class="pb-3 font-medium">Окуучу</th>
+                            <th class="pb-3 font-medium">Тесттин аталышы</th>
+                            <th class="pb-3 font-medium">Упай (Баа)</th>
+                            <th class="pb-3 font-medium text-center">Коопсуздук абалы</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body" class="text-sm divide-y divide-gray-800/60">
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-gray-500 animate-pulse">Firebase'ге туташуу күтүлүүдө...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Өзүңүздүн Firebase Config маалыматыңызды бул жерге жабыштырыңыз:
+        const firebaseConfig = {
+            apiKey: "СИЗДИН_API_KEY",
+            authDomain: "долбоор-аты.firebaseapp.com",
+            databaseURL: "https://долбоор-аты.firebaseio.com",
+            projectId: "долбоор-аты",
+            storageBucket: "долбоор-аты.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:12345:web:abcdef"
+        };
+
+        // Firebase-ти иштетүү
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // 2. Firebase Realtime Database'ден маалыматтарды реалдуу убакытта алуу
+        database.ref('results/quiz_1').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const tableBody = document.getElementById('results-table-body');
+            tableBody.innerHTML = ""; // Эски маалыматтарды тазалоо
+
+            if (!data) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-gray-500">Азырынча жыйынтыктар жок. Окуучулар тестти баштаганда бул жерге дароо чыгат!</td></tr>`;
+                return;
+            }
+
+            // Келген маалыматты таблицага толтуруу
+            for (let id in data) {
+                let student = data[id];
+                
+                // Коопсуздук белгисин аныктоо (Эгер терезеден чыкса кызыл, чыкпаса жашыл болот)
+                let statusBadge = "";
+                if (student.cheated_count > 0) {
+                    statusBadge = `<span class="bg-red-950/60 text-red-400 border border-red-800 text-xs px-2 py-1 rounded font-bold">Бөгөт! (Чыкты: ${student.cheated_count})</span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-950/60 text-emerald-400 border border-emerald-800 text-xs px-2 py-1 rounded font-bold">Таза</span>`;
+                }
+
+                let row = `
+                    <tr class="hover:bg-gray-800/30 transition">
+                        <td class="py-3 font-medium">${student.name}</td>
+                        <td class="py-3 text-gray-400">${student.quiz_title}</td>
+                        <td class="py-3 font-bold text-blue-400">${student.score} <span class="ml-2 text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">${student.grade}</span></td>
+                        <td class="py-3 text-center">${statusBadge}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            }
+        });
+    </script>
+</body>
+</html>
