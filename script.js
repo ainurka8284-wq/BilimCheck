@@ -1,4 +1,3 @@
-// Firebase жеке конфигурациясы
 const firebaseConfig = {
     apiKey: "AIzaSyAW4ztx5zqry9vLPIGTZGcf1eTCxWcQnqI",
     authDomain: "bilimchek.firebaseapp.com",
@@ -9,42 +8,38 @@ const firebaseConfig = {
     appId: "1:214598424733:web:3775772e9c37662ed05c74"
 };
 
-// Firebase'ди коопсуз демилгелөө
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const database = firebase.database();
 
-// Баскычтарды жана контейнерлерди кодго байлоо
 const btnAddTest = document.querySelector('.btn-add');
 const testsListContainer = document.getElementById('tests-list');
 const resultsListContainer = document.getElementById('results-list');
-const btnClean = document.querySelector('.btn-clean') || document.querySelector('button[class=""]'); // Эгер класс өзгөрсө да табуу үчүн
+const btnClean = document.querySelector('.btn-clean');
 
-// --- 1. ЖАҢЫ ТЕСТ КОШУУ БАСКЫЧЫ ---
+let currentEditingTestId = "";
+
+// --- 1. ЖАҢЫ ТЕСТ КОШУУ ---
 if (btnAddTest) {
     btnAddTest.addEventListener('click', () => {
-        const testName = prompt("Жаңы тесттин аталышын киргизиңиз (Мисалы: 10-B класс жылдык):");
-        
+        const testName = prompt("Жаңы тесттин аталышын киргизиңиз (Мисалы: 9-класс Программалоо):");
         if (testName && testName.trim() !== "") {
             const newTestRef = database.ref('tests').push();
             newTestRef.set({
                 name: testName.trim(),
-                status: "жабык" // Алгач тест жабык болот
+                status: "жабык"
             }).then(() => {
-                alert("Тест ийгиликтүү түзүлдү жана базага кошулду!");
-            }).catch((error) => {
-                alert("Базага жазууда ката кетти: " + error.message);
+                alert("Тесттин аталышы ийгиликтүү кошулду!");
             });
         }
     });
 }
 
-// --- 2. БАЗАДАН ТЕСТТЕРДИ РЕАЛДУУ УБАКИ ТАРТЫП ЭКРАНГА ЧЫГАРУУ ---
+// --- 2. БАЗАДАН ТЕСТТЕРДИ ЖАНА БАРДЫК БАСКЫЧТАРДЫ ЧЫГАРУУ ---
 database.ref('tests').on('value', (snapshot) => {
     if (!testsListContainer) return;
     testsListContainer.innerHTML = "";
-    
     const data = snapshot.val();
     
     if (data) {
@@ -55,87 +50,159 @@ database.ref('tests').on('value', (snapshot) => {
             const testCard = document.createElement('div');
             testCard.className = 'test-card';
             testCard.innerHTML = `
-                <div class="test-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-weight: bold;">${test.name}</span>
-                    <label class="switch">
-                        <input type="checkbox" ${isChecked} onchange="toggleTestStatus('${key}', this.checked)">
-                        <span class="slider"></span>
-                    </label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-weight: bold; font-size: 16px;">${test.name}</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 12px; color: #94a3b8;">${test.status === "ачык" ? "Ачык" : "Жабык"}</span>
+                        <label class="switch">
+                            <input type="checkbox" ${isChecked} onchange="toggleTestStatus('${key}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="card-buttons" style="display: flex; gap: 5px;">
-                    <button class="btn-sm btn-link" style="background: #2563eb; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;" onclick="copyLink('${key}')">Шилтеме</button>
-                    <button class="btn-sm btn-delete" style="background: #dc2626; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;" onclick="deleteTest('${key}')">Өчүрүү</button>
+                <div class="card-buttons">
+                    <button class="btn-sm btn-blue" onclick="copyLink('${key}')">Шилтеме</button>
+                    <button class="btn-sm btn-orange" onclick="openEditModal('${key}', '${test.name}')">Түзөтүү</button>
+                    <button class="btn-sm btn-red" onclick="deleteTest('${key}')">Өчүрүү</button>
                 </div>
             `;
             testsListContainer.appendChild(testCard);
         });
     } else {
-        testsListContainer.innerHTML = `<p style="color: #9ca3af; font-size: 14px; font-style: italic;">Азырынча тесттер жок. Өйдөдөн жаңы тест кошуңуз.</p>`;
-    }
-}, (error) => {
-    if (testsListContainer) {
-        testsListContainer.innerHTML = `<p style="color: #dc2626;">Ката: Базага кирүүгө уруксат берилген жок. Rules бөлүмүн текшериңиз.</p>`;
+        testsListContainer.innerHTML = `<p style="color: #64748b; font-style: italic;">Тесттер жок.</p>`;
     }
 });
 
-// --- 3. ОКУУЧУЛАРДЫН ЖЫЙЫНТЫКТАРЫН РЕАЛДУУ УБАКИ КӨЗӨМӨЛДӨӨ ---
-database.ref('results').on('value', (snapshot) => {
-    if (!resultsListContainer) return;
-    resultsListContainer.innerHTML = "";
+// --- 3. ТҮЗӨТҮҮ (МОДАЛЬ СУРОО КИРГИЗҮҮ) ---
+window.openEditModal = function(testId, testName) {
+    currentEditingTestId = testId;
+    document.getElementById('modal-test-name').innerText = testName + " - Суроолорду башкаруу";
+    document.getElementById('edit-modal').style.display = "block";
     
-    const data = snapshot.val();
-    
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            const res = data[key];
-            
-            let statusBadge = '';
-            if (res.status === 'Таза') {
-                statusBadge = `<span style="background: #065f46; color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Таза</span>`;
-            } else if (res.status && res.status.includes('Чыкты')) {
-                statusBadge = `<span style="background: #78350f; color: #fbbf24; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${res.status}</span>`;
-            } else {
-                statusBadge = `<span style="background: #991b1b; color: #fca5a5; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Бөгөт!</span>`;
-            }
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="padding: 12px; border-bottom: 1px solid #1f2937;">${res.studentName}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #1f2937;">${res.testName}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #1f2937;"><span style="background: #1e3a8a; color: #60a5fa; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${res.score}</span></td>
-                <td style="padding: 12px; border-bottom: 1px solid #1f2937;">${statusBadge}</td>
-            `;
-            resultsListContainer.appendChild(row);
-        });
-    } else {
-        resultsListContainer.innerHTML = `<tr><td colspan="4" style="color: #9ca3af; text-align: center; padding: 20px; font-style: italic;">Азырынча жыйынтыктар жок.</td></tr>`;
-    }
-});
-
-// --- 4. ТЕСТТИ КҮЙГҮЗҮҮ / ЖАБУУ ---
-window.toggleTestStatus = function(testId, isOpening) {
-    const newStatus = isOpening ? "ачык" : "жабык";
-    database.ref('tests/' + testId).update({ status: newStatus });
+    database.ref('tests/' + testId + '/questions').on('value', (snapshot) => {
+        const qList = document.getElementById('modal-questions-list');
+        qList.innerHTML = "";
+        const questions = snapshot.val();
+        
+        if (questions) {
+            let index = 1;
+            Object.keys(questions).forEach((qKey) => {
+                const q = questions[qKey];
+                const qDiv = document.createElement('div');
+                qDiv.style = "background: #0f172a; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;";
+                qDiv.innerHTML = `
+                    <div>
+                        <p style="margin: 0; font-weight: bold;">${index}. ${q.text}</p>
+                        <small style="color: #10b981;">Туура вариант: ${q.correct}</small>
+                    </div>
+                    <button onclick="deleteQuestion('${testId}', '${qKey}')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Өчүрүү</button>
+                `;
+                qList.appendChild(qDiv);
+                index++;
+            });
+        } else {
+            qList.innerHTML = `<p style="color: #64748b; font-size: 13px; font-style: italic;">Суроолор жок.</p>`;
+        }
+    });
 };
 
-// --- 5. ТЕСТТИ ӨЧҮРҮҮ ---
-window.deleteTest = function(testId) {
-    if (confirm("Бул тестти өчүрүүнү каалайсызбы?")) {
-        database.ref('tests/' + testId).remove();
+// --- 4. СУРОО ЖАНА ВАРИАНТТАРДЫ САКТОО ---
+window.saveQuestion = function() {
+    const qText = document.getElementById('q-text').value.trim();
+    const optA = document.getElementById('opt-a').value.trim();
+    const optB = document.getElementById('opt-b').value.trim();
+    const optC = document.getElementById('opt-c').value.trim();
+    const optD = document.getElementById('opt-d').value.trim();
+    const correct = document.getElementById('correct-opt').value;
+
+    if (!qText || !optA || !optB || !optC || !optD) {
+        alert("Сураныч, суроону жана А, Б, В, Г варианттарынын баарын толук жазыңыз!");
+        return;
     }
+
+    const questionRef = database.ref('tests/' + currentEditingTestId + '/questions').push();
+    questionRef.set({
+        text: qText,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        correct: correct
+    }).then(() => {
+        document.getElementById('q-text').value = "";
+        document.getElementById('opt-a').value = "";
+        document.getElementById('opt-b').value = "";
+        document.getElementById('opt-c').value = "";
+        document.getElementById('opt-d').value = "";
+        alert("Суроо варианттары менен ийгиликтүү кошулду!");
+    });
 };
 
-// --- 6. ШИЛТЕМЕ КӨЧҮРҮҮ ---
+// --- 5. ШИЛТЕМЕ КӨЧҮРҮҮ ---
 window.copyLink = function(testId) {
     const studentLink = window.location.origin + window.location.pathname.replace('index.html', '') + "student.html?test=" + testId;
     navigator.clipboard.writeText(studentLink).then(() => {
-        alert("Окуучулар үчүн шилтеме көчүрүлдү! Каалаган жерге (мисалы WhatsApp) чаптасаңыз болот:\n" + studentLink);
+        alert("Окуучулар үчүн шилтеме көчүрүлдү!\n\nШилтеме: " + studentLink);
     }).catch(() => {
         alert("Шилтеме: " + studentLink);
     });
 };
 
-// --- 7. ТАЗАЛОО БАСКЫЧЫ ---
+// --- 6. ТЕСТТИ ӨЧҮРҮҮ ---
+window.deleteTest = function(testId) {
+    if (confirm("Бул тестти жана анын ичиндеги бардык суроолорду базадан биротоло өчүрөсүзбү?")) {
+        database.ref('tests/' + testId).remove();
+    }
+};
+
+// --- 7. СУРООНУ ӨЧҮРҮҮ ---
+window.deleteQuestion = function(testId, qKey) {
+    if (confirm("Бул суроону өчүрүүнү каалайсызбы?")) {
+        database.ref('tests/' + testId + '/questions/' + qKey).remove();
+    }
+};
+
+// --- 8. ТЕСТ СТАТУСУН АЛМАШТЫРУУ (Ачык/Жабык) ---
+window.toggleTestStatus = function(testId, isOpening) {
+    const newStatus = isOpening ? "ачык" : "жабык";
+    database.ref('tests/' + testId).update({ status: newStatus });
+};
+
+// --- 9. ТЕРЕЗЕНИ ЖАБУУ ---
+window.closeModal = function() {
+    document.getElementById('edit-modal').style.display = "none";
+};
+
+// --- 10. ЖЫЙЫНТЫКТАРДЫ РЕАЛДУУ УБАКИ ОКУУ ---
+database.ref('results').on('value', (snapshot) => {
+    if (!resultsListContainer) return;
+    resultsListContainer.innerHTML = "";
+    const data = snapshot.val();
+    
+    if (data) {
+        Object.keys(data).forEach((key) => {
+            const res = data[key];
+            let badge = '';
+            if (res.status === 'Таза') {
+                badge = `<span style="color: #10b981; font-weight: bold;">Таза</span>`;
+            } else if (res.status && res.status.includes('Чыкты')) {
+                badge = `<span style="color: #f59e0b; font-weight: bold;">${res.status}</span>`;
+            } else {
+                badge = `<span style="color: #ef4444; font-weight: bold;">Бөгөт!</span>`;
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${res.studentName}</td>
+                <td>${res.testName}</td>
+                <td><span style="background: #1e3a8a; padding: 4px 8px; border-radius: 4px; color: #60a5fa; font-weight: bold;">${res.score}</span></td>
+                <td>${badge}</td>
+            `;
+            resultsListContainer.appendChild(row);
+        });
+    } else {
+        resultsListContainer.innerHTML = `<tr><td colspan="4" style="color: #64748b; text-align: center; font-style: italic; padding: 20px;">Азырынча жыйынтыктар жок.</td></tr>`;
+    }
+});
+
+// --- 11. ЖЫЙЫНТЫКТАРДЫ ТАЗАЛОО ---
 if (btnClean) {
     btnClean.addEventListener('click', () => {
         if (confirm("Бардык окуучулардын жыйынтыктарын өчүрүүнү каалайсызбы?")) {
