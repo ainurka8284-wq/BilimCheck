@@ -3,34 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilimCheck - Мугалимдин панели</title>
-    <link rel="stylesheet" href="style.css">
+    <title>BILIMCHECK - Мугалимдин панели</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e293b;
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #38bdf8;
+            letter-spacing: 1px;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        .panel-card {
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+            color: #38bdf8;
+        }
+        .btn-main {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .test-card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+        .card-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            color: white;
+        }
+        .btn-blue { background-color: #2563eb; }
+        .btn-orange { background-color: #d97706; }
+        .btn-red { background-color: #dc2626; }
+        
+        /* Switch/Тоггл стили */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569; transition: .3s; border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #10b981; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { color: #94a3b8; }
+    </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="logo">BILIMCHECK <span class="panel-text">панель</span></div>
-        <div class="header-buttons">
-            <button class="btn btn-excel">+ EXCEL ЖҮКТӨӨ</button>
-            <button class="btn btn-add">+ ЖАҢЫ ТЕСТ ТҮЗҮҮ</button>
-        </div>
-    </header>
+    <div class="header">
+        <div class="logo">BILIMCHECK <span style="font-size: 14px; color: #94a3b8;">панель</span></div>
+        <button class="btn-main btn-add">+ ЖАҢЫ ТЕСТ ТҮЗҮҮ</button>
+    </div>
 
     <div class="main-container">
-        <aside class="sidebar">
+        <div class="panel-card">
             <h3>📁 МЕНИН ТЕСТТЕРИМ</h3>
             <div id="tests-list">
-                <p style="color: #9ca3af; font-size: 14px; font-style: italic;">Тесттер жүктөлүүдө...</p>
-            </div>
-        </aside>
+                </div>
+        </div>
 
-        <main class="content">
-            <div class="content-header">
-                <h3>📊 ОКУУЧУЛАРДЫН ЖЫЙЫНТЫКТАРЫ (РЕАЛДУУ УБАКЫТ)</h3>
-                <button class="btn-clean">Тазалоо</button>
+        <div class="panel-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>📊 ОКУУЧУЛАРДЫН ЖЫЙЫНТЫКТАРЫ (РЕАЛДУУ УБАКИ)</h3>
+                <button class="btn-sm btn-red btn-clean" style="padding: 8px 15px;">Тазалоо</button>
             </div>
-
-            <table class="results-table">
+            <table>
                 <thead>
                     <tr>
                         <th>ОКУУЧУ</th>
@@ -40,17 +132,49 @@
                     </tr>
                 </thead>
                 <tbody id="results-list">
-                    <tr>
-                        <td colspan="4" style="color: #9ca3af; text-align: center; font-style: italic;">Firebase'ге туташуу күтүлүүдө...</td>
-                    </tr>
-                </tbody>
+                    </tbody>
             </table>
-        </main>
+        </div>
+    </div>
+
+    <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; overflow-y: auto;">
+        <div style="background: #1e293b; max-width: 600px; margin: 40px auto; padding: 25px; border-radius: 12px; border: 1px solid #475569;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+                <h3 id="modal-test-name" style="margin: 0; border: none;">Тестке суроо кошуу</h3>
+                <button onclick="closeModal()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">X</button>
+            </div>
+
+            <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #334155;">
+                <h4 style="margin-top: 0; color: #10b981;">➕ Жаңы суроо түзүү</h4>
+                <input type="text" id="q-text" placeholder="Суроонун тексти..." style="width: 100%; padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; margin-bottom: 12px; box-sizing: border-box; outline: none;">
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="text" id="opt-a" placeholder="А варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
+                    <input type="text" id="opt-b" placeholder="Б варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
+                    <input type="text" id="opt-c" placeholder="В варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
+                    <input type="text" id="opt-d" placeholder="Г варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label style="color: #94a3b8;">Туура жоопту тандаңыз: </label>
+                    <select id="correct-opt" style="padding: 8px; background: #1e293b; color: white; border-radius: 6px; border: 1px solid #475569;">
+                        <option value="A">А</option>
+                        <option value="B">Б</option>
+                        <option value="C">В</option>
+                        <option value="D">Г</option>
+                    </select>
+                </div>
+
+                <button onclick="saveQuestion()" style="width: 100%; margin-top: 15px; background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Суроону сактоо</button>
+            </div>
+
+            <h4>📋 Киргизилген суроолордун тизмеси:</h4>
+            <div id="modal-questions-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
     <script src="script.js"></script>
 </body>
 </html>
