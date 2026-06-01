@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BILIMCHECK - Мугалимдин панели</title>
     <style>
+        /* Сиздин учурдагы кооз кара түстөгү стилдериңиз */
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background-color: #0f172a;
@@ -53,33 +54,39 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            transition: opacity 0.2s;
         }
+        .btn-main:hover { opacity: 0.9; }
+        
         .test-card {
             background: #0f172a;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             margin-bottom: 15px;
             border: 1px solid #334155;
         }
         .card-buttons {
             display: flex;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
         }
         .btn-sm {
-            padding: 6px 12px;
+            padding: 8px 14px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             font-size: 13px;
             color: white;
+            transition: opacity 0.2s;
         }
+        .btn-sm:hover { opacity: 0.9; }
         .btn-blue { background-color: #2563eb; }
-        .btn-orange { background-color: #d97706; }
+        .btn-orange { background-color: #d97706; } /* Түзөтүү кнопкасынын түсү */
         .btn-red { background-color: #dc2626; }
         
-        /* Switch/Тоггл стили */
+        /* Которгуч (Switch) стили */
         .switch {
             position: relative;
             display: inline-block;
@@ -101,6 +108,20 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
         th { color: #94a3b8; }
+
+        /* Модалдык терезе үчүн кооз инпуттардын стили */
+        .modal-input {
+            width: 100%; 
+            padding: 11px; 
+            background: #1e293b; 
+            border: 1px solid #475569; 
+            color: white; 
+            border-radius: 6px; 
+            margin-bottom: 12px; 
+            box-sizing: border-box; 
+            outline: none;
+        }
+        .modal-input:focus { border-color: #38bdf8; }
     </style>
 </head>
 <body>
@@ -138,26 +159,27 @@
     </div>
 
     <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; overflow-y: auto;">
-        <div style="background: #1e293b; max-width: 600px; margin: 40px auto; padding: 25px; border-radius: 12px; border: 1px solid #475569;">
+        <div style="background: #1e293b; max-width: 600px; margin: 40px auto; padding: 25px; border-radius: 12px; border: 1px solid #475569; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
-                <h3 id="modal-test-name" style="margin: 0; border: none;">Тестке суроо кошуу</h3>
-                <button onclick="closeModal()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">X</button>
+                <h3 id="modal-test-name" style="margin: 0; border: none; font-size: 18px;">Суроолорду башкаруу</h3>
+                <button onclick="closeModal()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Жабуу X</button>
             </div>
 
-            <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #334155;">
-                <h4 style="margin-top: 0; color: #10b981;">➕ Жаңы суроо түзүү</h4>
-                <input type="text" id="q-text" placeholder="Суроонун тексти..." style="width: 100%; padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; margin-bottom: 12px; box-sizing: border-box; outline: none;">
+            <div style="background: #0f172a; padding: 18px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #334155;">
+                <h4 style="margin-top: 0; color: #10b981; margin-bottom: 12px;">➕ Жаңы суроо жана вариант кошуу</h4>
                 
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <input type="text" id="opt-a" placeholder="А варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
-                    <input type="text" id="opt-b" placeholder="Б варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
-                    <input type="text" id="opt-c" placeholder="В варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
-                    <input type="text" id="opt-d" placeholder="Г варианты..." style="padding: 10px; background: #1e293b; border: 1px solid #475569; color: white; border-radius: 6px; outline: none;">
+                <input type="text" id="q-text" placeholder="Суроонун текстин жазыңыз..." class="modal-input">
+                
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <input type="text" id="opt-a" placeholder="А вариантын жазыңыз..." class="modal-input">
+                    <input type="text" id="opt-b" placeholder="Б вариантын жазыңыз..." class="modal-input">
+                    <input type="text" id="opt-c" placeholder="В вариантын жазыңыз..." class="modal-input">
+                    <input type="text" id="opt-d" placeholder="Г вариантын жазыңыз..." class="modal-input">
                 </div>
 
-                <div style="margin-top: 15px;">
-                    <label style="color: #94a3b8;">Туура жоопту тандаңыз: </label>
-                    <select id="correct-opt" style="padding: 8px; background: #1e293b; color: white; border-radius: 6px; border: 1px solid #475569;">
+                <div style="margin-top: 5px; margin-bottom: 15px;">
+                    <label style="color: #94a3b8; font-size: 15px;">Туура жооп кайсы вариант? </label>
+                    <select id="correct-opt" style="padding: 8px 12px; background: #1e293b; color: white; border-radius: 6px; border: 1px solid #475569; outline: none; cursor: pointer;">
                         <option value="A">А</option>
                         <option value="B">Б</option>
                         <option value="C">В</option>
@@ -165,11 +187,12 @@
                     </select>
                 </div>
 
-                <button onclick="saveQuestion()" style="width: 100%; margin-top: 15px; background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Суроону сактоо</button>
+                <button onclick="saveQuestion()" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">СУРООНУ БАЗАГА САКТОО</button>
             </div>
 
-            <h4>📋 Киргизилген суроолордун тизмеси:</h4>
-            <div id="modal-questions-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;"></div>
+            <h4 style="color: #38bdf8; margin-bottom: 10px;">📋 Бул тестке кошулган суроолор:</h4>
+            <div id="modal-questions-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                </div>
         </div>
     </div>
 
