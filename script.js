@@ -1,3 +1,4 @@
+// Firebase Конфигурациясы
 const firebaseConfig = {
     apiKey: "AIzaSyAW4ztx5zqry9vLPIGTZGcf1eTCxWcQnqI",
     authDomain: "bilimchek.firebaseapp.com",
@@ -8,6 +9,7 @@ const firebaseConfig = {
     appId: "1:214598424733:web:3775772e9c37662ed05c74"
 };
 
+// Firebase'ди активдештирүү
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -18,19 +20,19 @@ const testsListContainer = document.getElementById('tests-list');
 const resultsListContainer = document.getElementById('results-list');
 const btnClean = document.querySelector('.btn-clean');
 
-let currentEditingTestId = "";
+let currentEditingTestId = ""; // Учурда кайсы тест оңдолуп жатканын эстеп калуучу өзгөрмө
 
 // --- 1. ЖАҢЫ ТЕСТ КОШУУ ---
 if (btnAddTest) {
     btnAddTest.addEventListener('click', () => {
-        const testName = prompt("Жаңы тесттин аталышын киргизиңиз (Мисалы: 9-класс Программалоо):");
+        const testName = prompt("Жаңы тесттин аталышын киргизиңиз (Мисалы: 10-Б класс Информатика):");
         if (testName && testName.trim() !== "") {
             const newTestRef = database.ref('tests').push();
             newTestRef.set({
                 name: testName.trim(),
                 status: "жабык"
             }).then(() => {
-                alert("Тесттин аталышы ийгиликтүү кошулду!");
+                alert("Тесттин аталышы ийгиликтүү түзүлдү!");
             });
         }
     });
@@ -49,9 +51,11 @@ database.ref('tests').on('value', (snapshot) => {
             
             const testCard = document.createElement('div');
             testCard.className = 'test-card';
+            
+            // ТҮЗӨТҮҮ баскычы ушул жерге ийгиликтүү кошулду!
             testCard.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-weight: bold; font-size: 16px;">${test.name}</span>
+                    <span style="font-weight: bold; font-size: 16px; color: #f1f5f9;">${test.name}</span>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 12px; color: #94a3b8;">${test.status === "ачык" ? "Ачык" : "Жабык"}</span>
                         <label class="switch">
@@ -69,16 +73,17 @@ database.ref('tests').on('value', (snapshot) => {
             testsListContainer.appendChild(testCard);
         });
     } else {
-        testsListContainer.innerHTML = `<p style="color: #64748b; font-style: italic;">Тесттер жок.</p>`;
+        testsListContainer.innerHTML = `<p style="color: #64748b; font-style: italic; padding: 10px;">Тесттер түзүлө элек.</p>`;
     }
 });
 
-// --- 3. ТҮЗӨТҮҮ (МОДАЛЬ СУРОО КИРГИЗҮҮ) ---
+// --- 3. ТҮЗӨТҮҮ БАСКЫЧЫ БАСЫЛГАНДА МОДАЛДЫ АЧУУ ---
 window.openEditModal = function(testId, testName) {
     currentEditingTestId = testId;
-    document.getElementById('modal-test-name').innerText = testName + " - Суроолорду башкаруу";
+    document.getElementById('modal-test-name').innerText = testName + " - Суроолорду түзөтүү";
     document.getElementById('edit-modal').style.display = "block";
     
+    // Бул тесттин ичиндеги суроолорду реалдуу убакытта модалга чыгаруу
     database.ref('tests/' + testId + '/questions').on('value', (snapshot) => {
         const qList = document.getElementById('modal-questions-list');
         qList.innerHTML = "";
@@ -89,24 +94,24 @@ window.openEditModal = function(testId, testName) {
             Object.keys(questions).forEach((qKey) => {
                 const q = questions[qKey];
                 const qDiv = document.createElement('div');
-                qDiv.style = "background: #0f172a; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;";
+                qDiv.style = "background: #0f172a; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;";
                 qDiv.innerHTML = `
-                    <div>
-                        <p style="margin: 0; font-weight: bold;">${index}. ${q.text}</p>
-                        <small style="color: #10b981;">Туура вариант: ${q.correct}</small>
+                    <div style="max-width: 80%;">
+                        <p style="margin: 0; font-weight: bold; color: #f1f5f9; font-size: 14px;">${index}. ${q.text}</p>
+                        <small style="color: #10b981; font-weight: bold;">Туура жооп: ${q.correct}</small>
                     </div>
-                    <button onclick="deleteQuestion('${testId}', '${qKey}')" style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Өчүрүү</button>
+                    <button onclick="deleteQuestion('${testId}', '${qKey}')" style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Өчүрүү</button>
                 `;
                 qList.appendChild(qDiv);
                 index++;
             });
         } else {
-            qList.innerHTML = `<p style="color: #64748b; font-size: 13px; font-style: italic;">Суроолор жок.</p>`;
+            qList.innerHTML = `<p style="color: #64748b; font-size: 13px; font-style: italic; text-align: center; padding: 10px;">Бул тестте азырынча суроолор жок.</p>`;
         }
     });
 };
 
-// --- 4. СУРОО ЖАНА ВАРИАНТТАРДЫ САКТОО ---
+// --- 4. СУРОО ЖАНА 4 ВАРИАНТТЫ БАЗАГА САКТОО ---
 window.saveQuestion = function() {
     const qText = document.getElementById('q-text').value.trim();
     const optA = document.getElementById('opt-a').value.trim();
@@ -116,7 +121,7 @@ window.saveQuestion = function() {
     const correct = document.getElementById('correct-opt').value;
 
     if (!qText || !optA || !optB || !optC || !optD) {
-        alert("Сураныч, суроону жана А, Б, В, Г варианттарынын баарын толук жазыңыз!");
+        alert("Ката! Суроону жана А, Б, В, Г варианттарынын баарын толук толтуруңуз.");
         return;
     }
 
@@ -126,28 +131,29 @@ window.saveQuestion = function() {
         options: { A: optA, B: optB, C: optC, D: optD },
         correct: correct
     }).then(() => {
+        // Сакталгандан кийин инпуттарды тазалоо
         document.getElementById('q-text').value = "";
         document.getElementById('opt-a').value = "";
         document.getElementById('opt-b').value = "";
         document.getElementById('opt-c').value = "";
         document.getElementById('opt-d').value = "";
-        alert("Суроо варианттары менен ийгиликтүү кошулду!");
+        alert("Суроо жана анын варианттары ийгиликтүү кошулду!");
     });
 };
 
-// --- 5. ШИЛТЕМЕ КӨЧҮРҮҮ ---
+// --- 5. ШИЛТЕМЕ КӨЧҮРҮҮ ФУНКЦИЯСЫ ---
 window.copyLink = function(testId) {
     const studentLink = window.location.origin + window.location.pathname.replace('index.html', '') + "student.html?test=" + testId;
     navigator.clipboard.writeText(studentLink).then(() => {
-        alert("Окуучулар үчүн шилтеме көчүрүлдү!\n\nШилтеме: " + studentLink);
+        alert("Окуучулар үчүн шилтеме алмашуу буферине көчүрүлдү!\n\nШилтеме: " + studentLink);
     }).catch(() => {
         alert("Шилтеме: " + studentLink);
     });
 };
 
-// --- 6. ТЕСТТИ ӨЧҮРҮҮ ---
+// --- 6. ТЕСТТИ БИРОТОЛО ӨЧҮРҮҮ ---
 window.deleteTest = function(testId) {
-    if (confirm("Бул тестти жана анын ичиндеги бардык суроолорду базадан биротоло өчүрөсүзбү?")) {
+    if (confirm("Бул тестти жана анын ичиндеги бардык суроолорду базадан биротоло өчүрүүнү каалайсызбы?")) {
         database.ref('tests/' + testId).remove();
     }
 };
@@ -159,18 +165,18 @@ window.deleteQuestion = function(testId, qKey) {
     }
 };
 
-// --- 8. ТЕСТ СТАТУСУН АЛМАШТЫРУУ (Ачык/Жабык) ---
+// --- 8. ТЕСТ СТАТУСУН ӨЗГӨРТҮҮ (Ачык/Жабык) ---
 window.toggleTestStatus = function(testId, isOpening) {
     const newStatus = isOpening ? "ачык" : "жабык";
     database.ref('tests/' + testId).update({ status: newStatus });
 };
 
-// --- 9. ТЕРЕЗЕНИ ЖАБУУ ---
+// --- 9. МОДАЛДЫ ЖАБУУ ---
 window.closeModal = function() {
     document.getElementById('edit-modal').style.display = "none";
 };
 
-// --- 10. ЖЫЙЫНТЫКТАРДЫ РЕАЛДУУ УБАКИ ОКУУ ---
+// --- 10. ОКУУЧУЛАРДЫН ЖЫЙЫНТЫГЫН БАЗАДАН ОКУУ ---
 database.ref('results').on('value', (snapshot) => {
     if (!resultsListContainer) return;
     resultsListContainer.innerHTML = "";
@@ -198,14 +204,14 @@ database.ref('results').on('value', (snapshot) => {
             resultsListContainer.appendChild(row);
         });
     } else {
-        resultsListContainer.innerHTML = `<tr><td colspan="4" style="color: #64748b; text-align: center; font-style: italic; padding: 20px;">Азырынча жыйынтыктар жок.</td></tr>`;
+        resultsListContainer.innerHTML = `<tr><td colspan="4" style="color: #64748b; text-align: center; font-style: italic; padding: 20px;">Азырынча жыйынтыктар каттала элек.</td></tr>`;
     }
 });
 
 // --- 11. ЖЫЙЫНТЫКТАРДЫ ТАЗАЛОО ---
 if (btnClean) {
     btnClean.addEventListener('click', () => {
-        if (confirm("Бардык окуучулардын жыйынтыктарын өчүрүүнү каалайсызбы?")) {
+        if (confirm("Бардык окуучулардын жыйынтыктарын таблицадан өчүрүүнү каалайсызбы?")) {
             database.ref('results').remove();
         }
     });
