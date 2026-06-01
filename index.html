@@ -5,58 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BilimCheck - Мугалимдин панели</title>
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="app.js"></script>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo">BILIM<span>CHECK</span> <span class="badge">панель</span></div>
-        <div class="nav-buttons">
-            <button id="btn-excel" class="btn btn-excel">+ EXCEL ЖҮКТӨӨ</button>
-            <button id="btn-create-test" class="btn btn-create">+ ЖАҢЫ ТЕСТ ТҮЗҮҮ</button>
+        <div class="logo">BILIMCHECK <span class="panel-text">панель</span></div>
+        <div class="header-buttons">
+            <button class="btn btn-excel">+ EXCEL ЖҮКТӨӨ</button>
+            <button class="btn btn-add">+ ЖАҢЫ ТЕСТ ТҮЗҮҮ</button>
         </div>
     </header>
 
-    <main class="main-container">
-        <section class="card section-my-tests">
-            <h3>📂 МЕНИН ТЕСТТЕРИМ</h3>
-            <div id="tests-list" class="tests-list">
-                <div class="loading">Тесттер жүктөлүүдө...</div>
+    <div class="main-container">
+        <aside class="sidebar">
+            <h3>📁 МЕНИН ТЕСТТЕРИМ</h3>
+            <div id="tests-list">
+                <p style="color: #9ca3af; font-size: 14px; font-style: italic;">Тесттер жүктөлүүдө...</p>
             </div>
-        </section>
+        </aside>
 
-        <section class="card section-results">
-            <h3>📊 ОКУУЧУЛАРДЫН ЖЫЙЫНТЫКТАРЫ (РЕАЛДУУ УБАКЫТ)</h3>
-            <button id="btn-clear" class="btn-clear">Тазалоо</button>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ОКУУЧУ</th>
-                            <th>ТЕСТТИН АТАЛЫШЫ</th>
-                            <th>УПАЙ (БАА)</th>
-                            <th>КООПСУЗДУК АБАЛЫ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-table-body">
-                        <tr>
-                            <td colspan="4" class="status-msg">Firebase'ге туташуу күтүлүүдө...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <main class="content">
+            <div class="content-header">
+                <h3>📊 ОКУУЧУЛАРДЫН ЖЫЙЫНТЫКТАРЫ (РЕАЛДУУ УБАКЫТ)</h3>
+                <button class="btn-clean">Тазалоо</button>
             </div>
-        </section>
-    </main>
 
-    <div id="modal-test" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Жаңы тест түзүү</h2>
-            <input type="text" id="test-title" placeholder="Тесттин аталышы (мис: 7-класс 'Жылдык')">
-            <textarea id="test-questions" placeholder='Суроолорду JSON форматында же текст катары киргизиңиз...' rows="10"></textarea>
-            <button id="save-test-btn" class="btn btn-create">Сактоо</button>
-        </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>ОКУУЧУ</th>
+                        <th>ТЕСТТИН АТАЛЫШЫ</th>
+                        <th>УПАЙ (БАА)</th>
+                        <th>КООПСУЗДУК АБАЛЫ</th>
+                    </tr>
+                </thead>
+                <tbody id="results-list">
+                    <tr>
+                        <td colspan="4" style="color: #9ca3af; text-align: center; font-style: italic;">Firebase'ге туташуу күтүлүүдө...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
