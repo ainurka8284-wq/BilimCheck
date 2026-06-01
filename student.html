@@ -4,36 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BilimCheck - Тест тапшыруу</title>
-    <link rel="stylesheet" href="style.css">
     <style>
-        /* Окуучунун барагы үчүн кошумча стилдер */
-        .quiz-container { max-width: 600px; margin: 50px auto; padding: 30px; background: #111827; border-radius: 10px; border: 1px solid #1f2937; }
-        .input-group { margin-bottom: 20px; }
-        .input-group input { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; color: white; border-radius: 6px; font-size: 16px; }
-        .question-block { background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .options-label { display: block; margin: 10px 0; cursor: pointer; }
+        /* Окуучунун панели үчүн кооз жана заманбап кара түстөгү стилдер */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #1e293b;
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+            box-sizing: border-box;
+        }
+        h2, h3 {
+            color: #38bdf8;
+            margin-top: 0;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: #38bdf8;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+        .question-block {
+            background-color: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #f1f5f9;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            background-color: #1e293b;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #475569;
+            transition: background 0.2s;
+        }
+        .option-label:hover {
+            background-color: #334155;
+        }
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <div class="quiz-container" id="auth-block">
-        <h2>Aссалому алейкум! Тестке кош келиңиз.</h2>
-        <p style="color: #9ca3af; margin-bottom: 20px;">Улантуу үчүн аты-жөнүңүздү жазыңыз:</p>
+        <h2>Ассалому алейкум!</h2>
+        <p style="color: #94a3b8; font-size: 15px;">Тестти баштоо үчүн сураныч атыңызды жана фамилияңызды толук жазыңыз:</p>
         <div class="input-group">
-            <input type="text" id="student-name" placeholder="Атыңыз жана фамилияңыз...">
+            <input type="text" id="student-name" placeholder="Мисалы: Асанов Ислам">
         </div>
-        <button class="btn btn-add" id="btn-start" style="width: 100%;">ТЕСТТИ БАШТОО</button>
+        <button class="btn" id="btn-start">ТЕСТТИ БАШТОО</button>
     </div>
 
     <div class="quiz-container" id="quiz-block" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 10px; margin-bottom: 20px;">
-            <h3 id="quiz-title">Тест жүктөлүүдө...</h3>
-            <div id="cheat-counter" style="color: #fbbf24; font-weight: bold;">Чыгуулар: 0</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom: 20px;">
+            <h3 id="quiz-title" style="margin: 0;">Тест жүктөлүүдө...</h3>
+            <div id="cheat-counter" style="color: #fbbf24; font-weight: bold; background: #78350f; padding: 5px 10px; border-radius: 6px; font-size: 14px;">Чыгуулар: 0</div>
         </div>
         
         <div id="questions-container"></div>
 
-        <button class="btn btn-excel" id="btn-submit" style="width: 100%; margin-top: 20px;">ЖЫЙЫНТЫКТЫ ЖӨНӨТҮҮ</button>
+        <button class="btn" id="btn-submit" style="background: #10b981; margin-top: 10px;">ЖЫЙЫНТЫКТЫ ЖӨНӨТҮҮ</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -51,10 +143,13 @@
             appId: "1:214598424733:web:3775772e9c37662ed05c74"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Firebase'ди иштетүү
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const database = firebase.database();
 
-        // URL'ден тесттин ID'син алуу
+        // URL даректен тесттин ID кодун таап алуу
         const urlParams = new URLSearchParams(window.location.search);
         const testId = urlParams.get('test');
 
@@ -63,35 +158,54 @@
         const btnStart = document.getElementById('btn-start');
         const studentNameInput = document.getElementById('student-name');
         const quizTitle = document.getElementById('quiz-title');
+        const questionsContainer = document.getElementById('questions-container');
         
         let studentName = "";
-        let testName = "Тест";
+        let testName = "";
         let cheatCount = 0;
         let isQuizStarted = false;
-        let resultRef = null; // Базадагы шилтеме
+        let resultRef = null; 
+        let loadedQuestions = {}; // Базадан жүктөлгөн суроолорду сактоочу объект
 
-        // Тесттин атын базадан текшерүү
+        // 1. ТЕСТТИН АБАЛЫН ЖАНА СУРООЛОРУН БАЗАДАН ТЕКШЕРҮҮ
         if (testId) {
             database.ref('tests/' + testId).once('value', (snapshot) => {
                 const testData = snapshot.val();
                 if (testData) {
                     testName = testData.name;
                     quizTitle.innerText = testName;
+                    
+                    // Эгер мугалим тестти жаап койгон болсо киргизбейт
                     if (testData.status === "жабык") {
                         alert("Бул тест азыр жабык! Мугалим ачмайынча кирүүгө мүмкүн эмес.");
                         btnStart.disabled = true;
+                        return;
+                    }
+
+                    // Суроолорду эстеп калуу
+                    if (testData.questions) {
+                        loadedQuestions = testData.questions;
                     }
                 } else {
-                    alert("Тест табылган жок!");
+                    alert("Ката: Мындай тест табылган жок!");
+                    btnStart.disabled = true;
                 }
             });
+        } else {
+            alert("Тесттин шилтемеси туура эмес же ID көрсөтүлгөн эмес!");
+            btnStart.disabled = true;
         }
 
-        // Тестти баштоо
+        // 2. ТЕСТТИ БАШТОО
         btnStart.addEventListener('click', () => {
             studentName = studentNameInput.value.trim();
             if (!studentName) {
-                alert("Сураныч, атыңызды жазыңыз!");
+                alert("Сураныч, атыңызды жана фамилияңызды жазыңыз!");
+                return;
+            }
+
+            if (Object.keys(loadedQuestions).length === 0) {
+                alert("Бул тестте азырынча суроолор киргизиле элек. Мугалим суроо кошуусу зарыл!");
                 return;
             }
 
@@ -99,33 +213,45 @@
             quizBlock.style.display = "block";
             isQuizStarted = true;
 
-            // Базада окуучу үчүн баштапкы жыйынтык сабын түзөбүз
+            // Базанын 'results' папкасына окуучу башталганы тууралуу маалымат коопсуз жазылат
             resultRef = database.ref('results').push();
             resultRef.set({
                 studentName: studentName,
                 testName: testName,
                 score: "Иштеп жатат...",
-                status: "Таза"
+                status: "Таza"
             });
 
-            // Азырынча тест ичине убактылуу үлгү суроолорду чыгарып турабыз
-            loadSampleQuestions();
+            // Суроолорду экранга кооздоп чыгаруу
+            displayQuestions();
         });
 
-        function loadSampleQuestions() {
-            const container = document.getElementById('questions-container');
-            container.innerHTML = `
-                <div class="question-block">
-                    <p><b>1-суроо:</b> Информатика предмети эмнени изилдейт?</p>
-                    <label class="options-label"><input type="radio" name="q1" value="0"> Сүрөт тартууну</label>
-                    <label class="options-label"><input type="radio" name="q1" value="1"> Маалыматты алуу, сактоо жана иштетүү процесстерин</label>
-                    <label class="options-label"><input type="radio" name="q1" value="0"> Өсүмдүктөрдү</label>
-                </div>
-            `;
+        // 3. БАЗАДАН КЕЛГЕН СУРООЛОРДУ ЭКРАНГА ЧЫГАРУУ ФУНКЦИЯСЫ
+        function displayQuestions() {
+            questionsContainer.innerHTML = "";
+            let number = 1;
+
+            Object.keys(loadedQuestions).forEach((qKey) => {
+                const q = loadedQuestions[qKey];
+                const qBlock = document.createElement('div');
+                qBlock.className = 'question-block';
+                
+                // Суроонун түзүлүшү
+                qBlock.innerHTML = `
+                    <p class="question-text">${number}. ${q.text}</p>
+                    <div class="options-container">
+                        <label class="option-label"><input type="radio" name="${qKey}" value="A"> A) ${q.options.A}</label>
+                        <label class="option-label"><input type="radio" name="${qKey}" value="B"> B) ${q.options.B}</label>
+                        <label class="option-label"><input type="radio" name="${qKey}" value="C"> C) ${q.options.C}</label>
+                        <label class="option-label"><input type="radio" name="${qKey}" value="D"> D) ${q.options.D}</label>
+                    </div>
+                `;
+                questionsContainer.appendChild(qBlock);
+                number++;
+            });
         }
 
-        // --- ЭҢ НЕГИЗГИ БӨЛҮМ: КООПСУЗДУК СИСТЕМАСЫ ---
-        // Окуучу браузерде башка терезеге (вкладка) өтүп кеткенде же телефондон башка жакка чыкканда иштейт
+        // 4. КООПСУЗДУК СИСТЕМАСЫ (Браузерден башка терезеге өткөндө аныктоо)
         window.addEventListener('blur', () => {
             if (isQuizStarted && resultRef) {
                 cheatCount++;
@@ -134,28 +260,51 @@
                 let currentStatus = "Чыкты: " + cheatCount;
                 if (cheatCount >= 3) {
                     currentStatus = "Бөгөт!";
-                    alert("Сиз көп жолу башка терезеге өткөнүңүз үчүн тест автоматтык түрдө бөгөттөлдү!");
-                    finishQuiz(true); // Тестти автоматтык түрдө аяктоо
+                    alert("Сиз 3 жолу башка терезеге өткөнүңүз үчүн тест автоматтык түрдө бөгөттөлдү! Жыйынтык 0 упай менен жөнөтүлөт.");
+                    finishQuiz(true); // Тестти автоматтык түрдө жабуу
                 } else {
                     resultRef.update({ status: currentStatus });
                 }
             }
         });
 
-        // Жыйынтыкты кол менен жөнөтүү
+        // 5. ТЕСТТИ АЯКТОО ЖАНА УПАЙДЫ ЭСЕПТӨӨ
         document.getElementById('btn-submit').addEventListener('click', () => {
-            finishQuiz(false);
+            if (confirm("Тестти аяктап, жыйынтыгын мугалимге жөнөтүүнү каалайсызбы?")) {
+                finishQuiz(false);
+            }
         });
 
         function finishQuiz(isBlocked) {
+            if (!isQuizStarted) return;
             isQuizStarted = false;
-            let finalScore = isBlocked ? "0/20" : "18/20"; // Үлгү упай
-            
+
+            let totalQuestions = Object.keys(loadedQuestions).length;
+            let correctAnswersCount = 0;
+
+            // Эгер бөгөттөлбөсө окуучунун жоопторун текшеребиз
+            if (!isBlocked) {
+                Object.keys(loadedQuestions).forEach((qKey) => {
+                    const q = loadedQuestions[qKey];
+                    const selectedOption = document.querySelector(`input[name="${qKey}"]:checked`);
+                    
+                    if (selectedOption && selectedOption.value === q.correct) {
+                        correctAnswersCount++;
+                    }
+                });
+            }
+
+            // Упай форматы (Мисалы: 12/15)
+            let finalScore = isBlocked ? `0/${totalQuestions}` : `${correctAnswersCount}/${totalQuestions}`;
+            let finalStatus = cheatCount > 0 ? (cheatCount >= 3 ? "Бөгөт!" : "Чыкты: " + cheatCount) : "Таза";
+
+            // Маалыматты Firebase'ге коопсуз жөнөтүү
             resultRef.update({
                 score: finalScore,
-                status: cheatCount > 0 ? (cheatCount >= 3 ? "Бөгөт!" : "Чыкты: " + cheatCount) : "Таза"
+                status: finalStatus
             }).then(() => {
-                alert("Тест аяктады! Жыйынтыгыңыз мугалимге жөнөтүлдү.");
+                alert(`Тест аяктады!\nСиздин жыйынтык: ${finalScore}\nМугалимдин панелине ийгиликтүү катталды.`);
+                // Баракты баштапкы абалга келтирүү
                 window.location.reload();
             });
         }
