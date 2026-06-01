@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BilimCheck - Тест тапшыруу</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Окуучунун барагы үчүн кошумча стилдер */
+        .quiz-container { max-width: 600px; margin: 50px auto; padding: 30px; background: #111827; border-radius: 10px; border: 1px solid #1f2937; }
+        .input-group { margin-bottom: 20px; }
+        .input-group input { width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; color: white; border-radius: 6px; font-size: 16px; }
+        .question-block { background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .options-label { display: block; margin: 10px 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="auth-block">
+        <h2>Aссалому алейкум! Тестке кош келиңиз.</h2>
+        <p style="color: #9ca3af; margin-bottom: 20px;">Улантуу үчүн аты-жөнүңүздү жазыңыз:</p>
+        <div class="input-group">
+            <input type="text" id="student-name" placeholder="Атыңыз жана фамилияңыз...">
+        </div>
+        <button class="btn btn-add" id="btn-start" style="width: 100%;">ТЕСТТИ БАШТОО</button>
+    </div>
+
+    <div class="quiz-container" id="quiz-block" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; padding-bottom: 10px; margin-bottom: 20px;">
+            <h3 id="quiz-title">Тест жүктөлүүдө...</h3>
+            <div id="cheat-counter" style="color: #fbbf24; font-weight: bold;">Чыгуулар: 0</div>
+        </div>
+        
+        <div id="questions-container"></div>
+
+        <button class="btn btn-excel" id="btn-submit" style="width: 100%; margin-top: 20px;">ЖЫЙЫНТЫКТЫ ЖӨНӨТҮҮ</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase конфигурациясы
+        const firebaseConfig = {
+            apiKey: "AIzaSyAW4ztx5zqry9vLPIGTZGcf1eTCxWcQnqI",
+            authDomain: "bilimchek.firebaseapp.com",
+            databaseURL: "https://bilimchek-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "bilimchek",
+            storageBucket: "bilimchek.firebasestorage.app",
+            messagingSenderId: "214598424733",
+            appId: "1:214598424733:web:3775772e9c37662ed05c74"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // URL'ден тесттин ID'син алуу
+        const urlParams = new URLSearchParams(window.location.search);
+        const testId = urlParams.get('test');
+
+        const authBlock = document.getElementById('auth-block');
+        const quizBlock = document.getElementById('quiz-block');
+        const btnStart = document.getElementById('btn-start');
+        const studentNameInput = document.getElementById('student-name');
+        const quizTitle = document.getElementById('quiz-title');
+        
+        let studentName = "";
+        let testName = "Тест";
+        let cheatCount = 0;
+        let isQuizStarted = false;
+        let resultRef = null; // Базадагы шилтеме
+
+        // Тесттин атын базадан текшерүү
+        if (testId) {
+            database.ref('tests/' + testId).once('value', (snapshot) => {
+                const testData = snapshot.val();
+                if (testData) {
+                    testName = testData.name;
+                    quizTitle.innerText = testName;
+                    if (testData.status === "жабык") {
+                        alert("Бул тест азыр жабык! Мугалим ачмайынча кирүүгө мүмкүн эмес.");
+                        btnStart.disabled = true;
+                    }
+                } else {
+                    alert("Тест табылган жок!");
+                }
+            });
+        }
+
+        // Тестти баштоо
+        btnStart.addEventListener('click', () => {
+            studentName = studentNameInput.value.trim();
+            if (!studentName) {
+                alert("Сураныч, атыңызды жазыңыз!");
+                return;
+            }
+
+            authBlock.style.display = "none";
+            quizBlock.style.display = "block";
+            isQuizStarted = true;
+
+            // Базада окуучу үчүн баштапкы жыйынтык сабын түзөбүз
+            resultRef = database.ref('results').push();
+            resultRef.set({
+                studentName: studentName,
+                testName: testName,
+                score: "Иштеп жатат...",
+                status: "Таза"
+            });
+
+            // Азырынча тест ичине убактылуу үлгү суроолорду чыгарып турабыз
+            loadSampleQuestions();
+        });
+
+        function loadSampleQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = `
+                <div class="question-block">
+                    <p><b>1-суроо:</b> Информатика предмети эмнени изилдейт?</p>
+                    <label class="options-label"><input type="radio" name="q1" value="0"> Сүрөт тартууну</label>
+                    <label class="options-label"><input type="radio" name="q1" value="1"> Маалыматты алуу, сактоо жана иштетүү процесстерин</label>
+                    <label class="options-label"><input type="radio" name="q1" value="0"> Өсүмдүктөрдү</label>
+                </div>
+            `;
+        }
+
+        // --- ЭҢ НЕГИЗГИ БӨЛҮМ: КООПСУЗДУК СИСТЕМАСЫ ---
+        // Окуучу браузерде башка терезеге (вкладка) өтүп кеткенде же телефондон башка жакка чыкканда иштейт
+        window.addEventListener('blur', () => {
+            if (isQuizStarted && resultRef) {
+                cheatCount++;
+                document.getElementById('cheat-counter').innerText = "Чыгуулар: " + cheatCount;
+                
+                let currentStatus = "Чыкты: " + cheatCount;
+                if (cheatCount >= 3) {
+                    currentStatus = "Бөгөт!";
+                    alert("Сиз көп жолу башка терезеге өткөнүңүз үчүн тест автоматтык түрдө бөгөттөлдү!");
+                    finishQuiz(true); // Тестти автоматтык түрдө аяктоо
+                } else {
+                    resultRef.update({ status: currentStatus });
+                }
+            }
+        });
+
+        // Жыйынтыкты кол менен жөнөтүү
+        document.getElementById('btn-submit').addEventListener('click', () => {
+            finishQuiz(false);
+        });
+
+        function finishQuiz(isBlocked) {
+            isQuizStarted = false;
+            let finalScore = isBlocked ? "0/20" : "18/20"; // Үлгү упай
+            
+            resultRef.update({
+                score: finalScore,
+                status: cheatCount > 0 ? (cheatCount >= 3 ? "Бөгөт!" : "Чыкты: " + cheatCount) : "Таза"
+            }).then(() => {
+                alert("Тест аяктады! Жыйынтыгыңыз мугалимге жөнөтүлдү.");
+                window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
